@@ -13,20 +13,18 @@ function Home2() {
               LET ME <span className="purple"> INTRODUCE </span> MYSELF
             </h1>
             <p className="home-about-body">
-              I’m a Software Engineer who loves transforming ideas into
-              reliable, scalable products. Over time, I’ve explored several
-              technologies and found my passion in building high-performance
-              systems and intuitive user experiences.
+                I fell in love with programming and I have at least learnt
+                something, I think… 🤷‍♂️
               <br />
               <br />
-              I’m proficient in
+              I have knowledge in classics like
               <i>
                 <b className="purple">
                   {" "}
                   JavaScript, C++, Rust, Node.js, and Java{" "}
                 </b>
               </i>
-              — and I enjoy working across both backend and frontend stacks.
+              My field of Interest's are building new 
               <br />
               <br />
               My key areas of interest include developing
@@ -35,16 +33,14 @@ function Home2() {
                   {" "}
                   Web Applications, Blockchain Solutions,{" "}
                 </b>
-              </i>
-              and exploring new ways to bridge on-chain and off-chain systems.
-              <br />
-              <br />
-              Whenever possible, I love building projects with
-              <b className="purple"> Node.js </b> and modern frameworks like{" "}
-              <i>
-                <b className="purple">React.js</b> and{" "}
-                <b className="purple">Next.js</b>.
-              </i>
+            My field of Interest's are building new &nbsp;
+                <i>
+                  <b className="purple">Web Technologies and Products </b> and
+                  also in areas related to{" "}
+                  <b className="purple">
+                    Blockchain.
+                  </b>
+                </i>
             </p>
           </Col>
           <Col md={4} className="myAvtar">

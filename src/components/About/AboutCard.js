@@ -8,37 +8,33 @@ function AboutCard() {
       <Card.Body>
         <blockquote className="blockquote mb-0">
           <p style={{ textAlign: "justify" }}>
-            Hi everyone! I’m <span className="purple">Soumyajit Behera</span>{" "}
-            from <span className="purple">Bhubaneswar, India</span>.
+            Namaste Everyone, I am <span className="purple">Ashok Pudasaini </span>
+            from <span className="purple"> Belkotgadhi-08, Nuwakot.</span>
             <br />
-            I’m currently working as a{" "}
-            <span className="purple">Software Developer</span> at{" "}
-            <span className="purple">Juspay</span>.
-            <br />I hold an Integrated M.Sc. (IMSc) in{" "}
-            <span className="purple">Mathematics and Computing</span> from{" "}
-            <span className="purple">BIT Mesra</span>.
+            I am currently employed as a Banker at Kamana Sewa Bikas Bank Limited.
             <br />
-            <br />
-            Outside of coding, I love engaging in activities that keep me
-            creative and inspired:
-          </p>
 
+            <br />
+            Apart from Banker, some other activities that I love to do!
+          </p>
           <ul>
             <li className="about-activity">
-              <ImPointRight /> Playing Games 🎮
+              <ImPointRight /> Learning new technology
             </li>
             <li className="about-activity">
-              <ImPointRight /> Writing Tech Blogs ✍️
+              <ImPointRight /> Writing Tech Blogs
             </li>
             <li className="about-activity">
-              <ImPointRight /> Traveling and Exploring New Places 🌍
+              <ImPointRight /> phoposhoot
             </li>
           </ul>
 
           <p style={{ color: "rgb(155 126 172)" }}>
-            "Strive to build things that make a difference!"{" "}
+            "गल्ति गर्नु प्रकृति हो‚
+                 गल्ति स्वीकार्नु संकृति हो‚
+                     गल्ति सुधार्नु प्रगति हो ।"{" "}
           </p>
-          <footer className="blockquote-footer">Soumyajit</footer>
+          <footer className="blockquote-footer">अशोक पुडासैनी</footer>
         </blockquote>
       </Card.Body>
     </Card>

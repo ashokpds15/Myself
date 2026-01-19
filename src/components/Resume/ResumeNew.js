@@ -1,56 +1,59 @@
-import React, { useState, useEffect } from "react";
-import { Container, Row } from "react-bootstrap";
-import Button from "react-bootstrap/Button";
-import Particle from "../Particle";
-import pdf from "../../Assets/../Assets/Soumyajit_Behera.pdf";
-import { AiOutlineDownload } from "react-icons/ai";
-import { Document, Page, pdfjs } from "react-pdf";
-import "react-pdf/dist/esm/Page/AnnotationLayer.css";
-pdfjs.GlobalWorkerOptions.workerSrc = `//cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjs.version}/pdf.worker.min.js`;
+import React from 'react';
 
-function ResumeNew() {
-  const [width, setWidth] = useState(1200);
-
-  useEffect(() => {
-    setWidth(window.innerWidth);
-  }, []);
-
+const ExternalSiteEmbed = () => {
   return (
     <div>
-      <Container fluid className="resume-section">
-        <Particle />
-        <Row style={{ justifyContent: "center", position: "relative" }}>
-          <Button
-            variant="primary"
-            href={pdf}
-            target="_blank"
-            style={{ maxWidth: "250px" }}
-          >
-            <AiOutlineDownload />
-            &nbsp;Download CV
-          </Button>
-        </Row>
+      {/* Live market timing message */}
+      <div style={{ 
+        textAlign: 'center', 
+        padding: '37px', 
+        fontSize: '18px', 
+        fontWeight: 'Italy', 
+        backgroundColor: '#001f3f',  // Navy blue background
+        color: '#FFDD57',  // Yellow text color
+        borderBottom: '2px solid #FF4136',  // Red bottom border
+        boxShadow: '0 4px 6px rgba(0, 0, 0, 0.1)',  // Shadow for depth
+        position: 'relative',  // Required for absolute positioning of the scrolling text
+        overflow: 'hidden',  // Hide overflow to keep the animation contained
+      }}>
+        <div style={{
+          whiteSpace: 'nowrap',  // Prevent line breaks
+          position: 'absolute',
+          width: '100%',
+          animation: 'scroll 100s linear infinite',  // Animation details
+          left: '100%',
+        }}>
+          This data is <span style={{ color: '#FF4136', fontWeight: 'bold' }}>live</span> between Sunday to Thursday 11 PM to 3 PM
+        </div>
+      </div>
 
-        <Row className="resume">
-          <Document file={pdf} className="d-flex justify-content-center">
-            <Page pageNumber={1} scale={width > 786 ? 1.7 : 0.6} />
-          </Document>
-        </Row>
-
-        <Row style={{ justifyContent: "center", position: "relative" }}>
-          <Button
-            variant="primary"
-            href={pdf}
-            target="_blank"
-            style={{ maxWidth: "250px" }}
-          >
-            <AiOutlineDownload />
-            &nbsp;Download CV
-          </Button>
-        </Row>
-      </Container>
+      {/* Embedded iframe with the live market */}
+      <div style={{ height: 'calc(100vh - 60px)', width: '100%' }}>
+        <iframe
+          src="https://nepsealpha.com/live-market?mobile_app=1"
+          title="Live Market"
+          style={{ 
+            height: '100%', 
+            width: '100%', 
+            border: '5px solid #000' 
+          }}
+        />
+      </div>
+      
+      <style>
+        {`
+          @keyframes scroll {
+            from {
+              transform: translateX(100%);
+            }
+            to {
+              transform: translateX(-100%);
+            }
+          }
+        `}
+      </style>
     </div>
   );
-}
+};
 
-export default ResumeNew;
+export default ExternalSiteEmbed;
