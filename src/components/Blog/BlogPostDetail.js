@@ -105,6 +105,11 @@ function BlogPostDetail() {
                   color: "#c770f0",
                   textDecoration: "none",
                   borderBottom: "2px solid #c770f0",
+                  position: "relative",
+                  zIndex: "10",
+                  pointerEvents: "auto",
+                  cursor: "pointer",
+                  display: "inline-block",
                 }}
               >
                 View on Blogger →

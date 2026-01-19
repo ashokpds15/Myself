@@ -104,6 +104,11 @@ function Blog() {
               textDecoration: "none",
               borderBottom: "2px solid #c770f0",
               paddingBottom: "5px",
+              position: "relative",
+              zIndex: "10",
+              pointerEvents: "auto",
+              cursor: "pointer",
+              display: "inline-block",
             }}
           >
             View all posts on Blogger →
