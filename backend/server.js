@@ -130,24 +130,31 @@ app.post("/api/notify-subscribers", (req, res) => {
       return res.status(200).json({ message: "No subscribers to notify" });
     }
 
-    // Build email content
+    // Build email content with lots of love ❤️
     const emailHtml = `
-      <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
-        <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 2rem; border-radius: 10px; text-align: center;">
-          <h1>📝 New Blog Post!</h1>
-          <p>Check out my latest blog post</p>
+      <div style="font-family: 'Segoe UI', Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+        <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 3rem 2rem; border-radius: 15px; text-align: center; box-shadow: 0 10px 30px rgba(0,0,0,0.2);">
+          <h1 style="margin: 0; font-size: 2.5rem;">📝 New Blog Post!</h1>
+          <p style="margin: 0.5rem 0 0 0; font-size: 1.1rem; opacity: 0.95;">Written with lots of ❤️ love for you</p>
         </div>
         
-        <div style="padding: 2rem; background-color: #f5f5f5;">
-          <h2 style="color: #333; margin-top: 0;">${blogTitle || subject}</h2>
-          <div style="background: white; padding: 1.5rem; border-radius: 8px; line-height: 1.6;">
+        <div style="padding: 2rem; background-color: #f9f9f9;">
+          <p style="color: #666; font-size: 1rem;">Hi there! 👋</p>
+          <p style="color: #666; font-size: 1rem; line-height: 1.6;">
+            I've just published a new blog post that I'm excited to share with you! 
+            This one is filled with insights, tips, and everything I've learned. 
+            I hope you find it helpful and inspiring. ✨
+          </p>
+          
+          <h2 style="color: #333; margin: 2rem 0 1rem 0; border-left: 4px solid #667eea; padding-left: 1rem;">${blogTitle || subject}</h2>
+          <div style="background: white; padding: 1.5rem; border-radius: 8px; line-height: 1.8; color: #444;">
             ${htmlContent}
           </div>
           
           ${
             blogLink
               ? `<div style="text-align: center; margin-top: 2rem;">
-                  <a href="${blogLink}" style="background-color: #667eea; color: white; padding: 12px 30px; text-decoration: none; border-radius: 5px; display: inline-block;">
+                  <a href="${blogLink}" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 14px 35px; text-decoration: none; border-radius: 8px; display: inline-block; font-weight: 600; font-size: 1.05rem; transition: transform 0.3s ease;">
                     Read Full Post →
                   </a>
                 </div>`
@@ -155,12 +162,22 @@ app.post("/api/notify-subscribers", (req, res) => {
           }
         </div>
         
-        <div style="background-color: #f0f0f0; padding: 1.5rem; text-align: center; border-top: 1px solid #ddd; margin-top: 2rem;">
-          <p style="color: #666; font-size: 0.9rem; margin: 0.5rem 0;">
-            You received this email because you subscribed to my blog updates.
+        <div style="background-color: #f0f0f0; padding: 2rem; text-align: center; border-top: 2px solid #ddd; margin-top: 2rem; border-radius: 0 0 15px 15px;">
+          <p style="color: #666; font-size: 1rem; margin: 0.5rem 0;">
+            <strong>Thank you for being here!</strong> 🙏
           </p>
-          <p style="color: #999; font-size: 0.85rem; margin: 0;">
-            © 2024 My Portfolio. All rights reserved.
+          <p style="color: #666; font-size: 0.95rem; line-height: 1.6; margin: 1rem 0;">
+            Your support means everything to me. Every read, every comment, 
+            every share—it all matters. I write these posts with you in mind, 
+            hoping they make a positive impact on your journey.
+          </p>
+          <p style="color: #999; font-size: 0.85rem; margin: 1.5rem 0 0 0;">
+            Sent with lots of ❤️ love<br>
+            © 2024 My Blog. All rights reserved.
+          </p>
+          <p style="color: #999; font-size: 0.8rem; margin: 1rem 0 0 0;">
+            <a href="https://yourportfolio.com/unsubscribe" style="color: #999; text-decoration: none;">Unsubscribe</a> | 
+            <a href="https://yourportfolio.com/blog" style="color: #999; text-decoration: none;">View All Posts</a>
           </p>
         </div>
       </div>
@@ -223,6 +240,128 @@ app.post("/api/unsubscribe", (req, res) => {
       email: email,
     });
   });
+});
+
+// Auto-send notification for latest blog post (Protected - requires API key)
+app.post("/api/auto-notify-latest-blog", (req, res) => {
+  const apiKey = req.query.key;
+
+  if (apiKey !== process.env.ADMIN_API_KEY) {
+    return res.status(401).json({ message: "Unauthorized" });
+  }
+
+  const BLOGGER_API_KEY = "AIzaSyCI9xZXzwPvx4bICIctsnTbxk9mfzIWNsY";
+  const BLOG_ID = "3800019340026834324";
+
+  // Fetch latest blog post from Blogger
+  fetch(
+    `https://www.googleapis.com/blogger/v3/blogs/${BLOG_ID}/posts?key=${BLOGGER_API_KEY}&maxResults=1&orderBy=published`
+  )
+    .then((response) => response.json())
+    .then((data) => {
+      if (!data.items || data.items.length === 0) {
+        return res.status(404).json({ message: "No blog posts found" });
+      }
+
+      const latestPost = data.items[0];
+      const blogTitle = latestPost.title;
+      const blogContent = latestPost.content.substring(0, 300) + "...";
+      const blogLink = latestPost.url;
+      const subject = `New Blog Post: ${blogTitle}`;
+
+      db.all(`SELECT email FROM subscribers`, [], (err, rows) => {
+        if (err) {
+          console.error("Database error:", err);
+          return res.status(500).json({ message: "Failed to fetch subscribers" });
+        }
+
+        if (rows.length === 0) {
+          return res.status(200).json({ message: "No subscribers to notify" });
+        }
+
+        // Build email with love message
+        const emailHtml = `
+          <div style="font-family: 'Segoe UI', Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+            <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 3rem 2rem; border-radius: 15px; text-align: center; box-shadow: 0 10px 30px rgba(0,0,0,0.2);">
+              <h1 style="margin: 0; font-size: 2.5rem;">📝 New Blog Post!</h1>
+              <p style="margin: 0.5rem 0 0 0; font-size: 1.1rem; opacity: 0.95;">Written with lots of ❤️ love for you</p>
+            </div>
+            
+            <div style="padding: 2rem; background-color: #f9f9f9;">
+              <p style="color: #666; font-size: 1rem;">Hi there! 👋</p>
+              <p style="color: #666; font-size: 1rem; line-height: 1.6;">
+                I've just published a new blog post that I'm excited to share with you! 
+                This one is filled with insights, tips, and everything I've learned. 
+                I hope you find it helpful and inspiring. ✨
+              </p>
+              
+              <h2 style="color: #333; margin: 2rem 0 1rem 0; border-left: 4px solid #667eea; padding-left: 1rem;">${blogTitle}</h2>
+              <div style="background: white; padding: 1.5rem; border-radius: 8px; line-height: 1.8; color: #444;">
+                ${blogContent}
+              </div>
+              
+              <div style="text-align: center; margin-top: 2rem;">
+                <a href="${blogLink}" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 14px 35px; text-decoration: none; border-radius: 8px; display: inline-block; font-weight: 600; font-size: 1.05rem;">
+                  Read Full Post →
+                </a>
+              </div>
+            </div>
+            
+            <div style="background-color: #f0f0f0; padding: 2rem; text-align: center; border-top: 2px solid #ddd; margin-top: 2rem; border-radius: 0 0 15px 15px;">
+              <p style="color: #666; font-size: 1rem; margin: 0.5rem 0;">
+                <strong>Thank you for being here!</strong> 🙏
+              </p>
+              <p style="color: #666; font-size: 0.95rem; line-height: 1.6; margin: 1rem 0;">
+                Your support means everything to me. Every read, every comment, 
+                every share—it all matters. I write these posts with you in mind, 
+                hoping they make a positive impact on your journey.
+              </p>
+              <p style="color: #999; font-size: 0.85rem; margin: 1.5rem 0 0 0;">
+                Sent with lots of ❤️ love<br>
+                © 2024 My Blog. All rights reserved.
+              </p>
+            </div>
+          </div>
+        `;
+
+        let sent = 0;
+        let failed = 0;
+
+        rows.forEach((subscriber) => {
+          transporter.sendMail(
+            {
+              from: process.env.GMAIL_USER,
+              to: subscriber.email,
+              subject: subject,
+              html: emailHtml,
+            },
+            (err, info) => {
+              if (err) {
+                console.error(`Failed to send email to ${subscriber.email}:`, err);
+                failed++;
+              } else {
+                console.log(`Email sent to ${subscriber.email}`);
+                sent++;
+              }
+
+              if (sent + failed === rows.length) {
+                res.status(200).json({
+                  message: `Auto-notification sent successfully`,
+                  blogTitle: blogTitle,
+                  sent: sent,
+                  failed: failed,
+                  total: rows.length,
+                });
+              }
+            }
+          );
+        });
+      });
+    })
+    .catch((error) => {
+      console.error("Error fetching blog posts:", error);
+      res.status(500).json({ message: "Failed to fetch blog posts" });
+    });
 });
 
 // Health check
