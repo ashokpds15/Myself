@@ -138,6 +138,22 @@
   font-weight: 600;
 }
 
+.blog-post-detail button {
+  position: relative;
+  z-index: 10;
+  pointer-events: auto !important;
+  cursor: pointer !important;
+}
+
+.blog-post-detail button:hover {
+  transform: scale(1.05);
+  background: linear-gradient(135deg, #9b5de5 0%, #c770f0 100%) !important;
+}
+
+.blog-post-detail button:active {
+  transform: scale(0.98);
+}
+
 @media (max-width: 768px) {
   .blog-post-detail {
     padding: 20px;
