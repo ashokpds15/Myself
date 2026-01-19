@@ -93,19 +93,23 @@
 
 .subscription-button {
   padding: 12px 30px;
-  background-color: #fff;
-  color: #667eea;
-  border: none;
+  background-color: #fff !important;
+  color: #667eea !important;
+  border: none !important;
   border-radius: 8px;
   font-weight: 600;
   font-size: 1rem;
   cursor: pointer;
   transition: all 0.3s ease;
   white-space: nowrap;
+  z-index: 10 !important;
+  pointer-events: auto !important;
+  position: relative;
+  min-width: 120px;
 }
 
 .subscription-button:hover:not(:disabled) {
-  background-color: #f0f0f0;
+  background-color: #f0f0f0 !important;
   transform: translateY(-2px);
   box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
 }
@@ -115,8 +119,9 @@
 }
 
 .subscription-button:disabled {
-  opacity: 0.7;
+  opacity: 0.6;
   cursor: not-allowed;
+  background-color: #ccc !important;
 }
 
 .subscription-alert {

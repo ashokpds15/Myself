@@ -9,10 +9,13 @@ const BlogSubscription = () => {
   const [message, setMessage] = useState("");
   const [messageType, setMessageType] = useState("");
 
+  // Check if email is valid
+  const isEmailValid = email && email.includes("@") && email.includes(".");
+
   const handleSubscribe = async (e) => {
     e.preventDefault();
     
-    if (!email || !email.includes("@")) {
+    if (!isEmailValid) {
       setMessageType("danger");
       setMessage("Please enter a valid email address");
       return;
@@ -75,8 +78,12 @@ const BlogSubscription = () => {
                   />
                   <Button
                     type="submit"
-                    disabled={loading}
+                    disabled={loading || !isEmailValid}
                     className="subscription-button"
+                    style={{
+                      opacity: isEmailValid ? 1 : 0.5,
+                      cursor: isEmailValid ? "pointer" : "not-allowed",
+                    }}
                   >
                     {loading ? "Subscribing..." : "Subscribe"}
                   </Button>
