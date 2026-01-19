@@ -1,0 +1,9 @@
+[build]
+command = "npm run build"
+cwd = "/"
+
+[build.environment]
+NODE_VERSION = "18"
+
+[[build.watch_paths]]
+paths = ["src/**/*.js", "src/**/*.jsx", "src/**/*.css"]
