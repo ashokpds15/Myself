@@ -78,22 +78,6 @@ function BlogPostDetail() {
 
         {post && (
           <article className="blog-post-detail">
-            <button
-              onClick={() => navigate("/blog")}
-              style={{
-                marginBottom: "20px",
-                padding: "8px 16px",
-                backgroundColor: "#c770f0",
-                color: "white",
-                border: "none",
-                borderRadius: "5px",
-                cursor: "pointer",
-                fontSize: "0.95em",
-              }}
-            >
-              ← Back to Blogs
-            </button>
-
             <h1 className="blog-post-title">{post.title}</h1>
 
             <div className="blog-post-meta">
