@@ -1,0 +1,21 @@
+{
+  "build": {
+    "command": "npm run build",
+    "cwd": "/",
+    "destination": "build"
+  },
+  "env": {
+    "production": {
+      "vars": {
+        "NODE_ENV": "production"
+      }
+    },
+    "preview": {
+      "vars": {
+        "NODE_ENV": "development"
+      }
+    }
+  },
+  "compatibility_date": "2024-01-01",
+  "nodeVersion": "18.17.0"
+}
