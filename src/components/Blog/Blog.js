@@ -23,7 +23,7 @@ function Blog() {
     const fetchPosts = async () => {
       try {
         const response = await fetch(
-          `https://www.googleapis.com/blogger/v3/blogs/${BLOG_ID}/posts?key=${BLOGGER_API_KEY}&maxResults=6`
+          `https://www.googleapis.com/blogger/v3/blogs/${BLOG_ID}/posts?key=${BLOGGER_API_KEY}&maxResults=12`
         );
         const data = await response.json();
         
