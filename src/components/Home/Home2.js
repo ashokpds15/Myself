@@ -33,14 +33,15 @@ function Home2() {
                   {" "}
                   Web Applications, Blockchain Solutions,{" "}
                 </b>
-            My field of Interest's are building new &nbsp;
-                <i>
-                  <b className="purple">Web Technologies and Products </b> and
-                  also in areas related to{" "}
-                  <b className="purple">
-                    Blockchain.
-                  </b>
-                </i>
+              </i>
+              &nbsp;
+              <i>
+                <b className="purple">Web Technologies and Products</b>
+              </i>
+              &nbsp;and also in areas related to{" "}
+              <b className="purple">
+                Blockchain.
+              </b>
             </p>
           </Col>
           <Col md={4} className="myAvtar">

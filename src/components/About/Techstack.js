@@ -38,9 +38,9 @@ function Techstack() {
       </Col>
       <Col xs={4} md={2} className="tech-icons">
         <img src={Typescript} alt="typescript" />
-        <div className="tech-icons-text">Javascript</div>
+        <div className="tech-icons-text">Typescript</div>
       </Col>
-      <Col xs={4} md={2} className="tech-icons">
+       <Col xs={4} md={2} className="tech-icons">
         <img src={Go} alt="go" />
         <div className="tech-icons-text">Go</div>
       </Col>
@@ -88,7 +88,7 @@ function Techstack() {
       <Col xs={4} md={2} className="tech-icons">
         <img src={Kubernates} alt="kubernetes" />
         <div className="tech-icons-text">Kubernetes</div>
-      </Col>
+      </Col> */
 
       <Col xs={4} md={2} className="tech-icons">
         <img src={SQL} alt="SQL" />
