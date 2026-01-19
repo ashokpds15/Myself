@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import { Container, Row, Col } from "react-bootstrap";
 import Particle from "../Particle";
 import BlogCard from "./BlogCard";
+import BlogSubscription from "./BlogSubscription";
 import "./Blog.css";
 
 function Blog() {
@@ -92,6 +93,8 @@ function Blog() {
             No blog posts found. Start writing!
           </p>
         )}
+
+        <BlogSubscription />
 
         <div style={{ textAlign: "center", paddingTop: "30px" }}>
           <a
