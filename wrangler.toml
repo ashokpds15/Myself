@@ -1,8 +1,0 @@
-name = "portfolio"
-
-[build]
-command = "npm run build"
-cwd = "./"
-
-[build.upload]
-dir = "build"
