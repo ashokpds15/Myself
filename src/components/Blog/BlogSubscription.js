@@ -73,8 +73,12 @@ const BlogSubscription = () => {
                     placeholder="Enter your email address"
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
-                    disabled={loading}
                     className="subscription-input"
+                    style={{
+                      pointerEvents: "auto",
+                      cursor: "text",
+                      zIndex: 5,
+                    }}
                   />
                   <Button
                     type="submit"
