@@ -1,0 +1,56 @@
+.market-status {
+  background: #000;
+  padding: 8px 12px;
+  color: #fff;
+  font-size: 1rem;
+  display: flex;
+  justify-content: center;
+  font-weight: 600;
+}
+.status-open { color: #00ff80; }
+.status-closed { color: #ff4f4f; }
+
+.indices-marquee {
+  width: 100%;
+  overflow: hidden;
+  background: #000;
+  border-bottom: 1px solid #222;
+  margin-top: 8px;
+}
+
+.indices-marquee-track {
+  display: flex;
+  gap: 1.8rem;
+  padding: 10px 0;
+  white-space: nowrap;
+  will-change: transform;
+}
+
+.indices-marquee-track:hover {
+  animation-play-state: paused !important;
+}
+
+.ticker-entry {
+  display: flex;
+  gap: 8px;
+  font-size: 0.92rem;
+  color: #fff;
+  font-weight: 500;
+}
+
+.t-symbol {
+  color: #f7d34a;
+  font-weight: 700;
+}
+
+.t-change.up {
+  color: #00ff80;
+}
+
+.t-change.down {
+  color: #ff4f4f;
+}
+
+@media (max-width: 600px) {
+  .ticker-entry { font-size: 0.78rem; gap: 4px; }
+}
