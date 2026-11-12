@@ -2,7 +2,7 @@
   height: 100vh;
   padding-top: 104px;
   overflow: hidden;
-  background: #fff;
+  background: #0b0f12;
 }
 
 .preeti-embed-frame {
@@ -10,7 +10,9 @@
   width: 100%;
   height: calc(100vh - 104px);
   border: 0;
-  background: #fff;
+  background: #0b0f12;
+  /* The embedded converter is cross-origin, so apply dark mode to the iframe itself. */
+  filter: invert(1) hue-rotate(180deg);
 }
 
 @media (max-width: 767px) {
