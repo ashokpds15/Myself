@@ -28,3 +28,4 @@ yarn-error.log*
 Server/node_modules
 Server/config.js
 /backend/subscribers.db*
+/.wrangler/

@@ -1,0 +1,6 @@
+name = "myself-portfolio"
+compatibility_date = "2026-11-12"
+pages_build_output_dir = "./build"
+
+[vars]
+BLOGGER_BLOG_ID = "3800019340026834324"

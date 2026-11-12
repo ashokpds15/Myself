@@ -6,4 +6,11 @@ cwd = "/"
 NODE_VERSION = "18"
 
 [[build.watch_paths]]
-paths = ["src/**/*.js", "src/**/*.jsx", "src/**/*.css"]
+paths = [
+  "src/**/*.js",
+  "src/**/*.jsx",
+  "src/**/*.css",
+  "functions/**/*.js",
+  "functions/**/*.mjs",
+  "wrangler.toml",
+]

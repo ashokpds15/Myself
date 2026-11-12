@@ -67,6 +67,11 @@ Open [http://localhost:3000](http://localhost:3000) to view it in the browser.
 The page will reload if you make edits. Use `npm run start:frontend` only when
 you already have the backend running separately.
 
+The production blog API is served by Cloudflare Pages Functions from the same
+domain as the site. Cloudflare Pages should use `npm run build` as its build
+command and `build` as its output directory; `wrangler.toml` contains the Pages
+configuration.
+
 ## Usage Instructions
 
 Open the project folder and Navigate to `/src/components/`. <br/>

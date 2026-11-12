@@ -94,6 +94,8 @@ Response:
 These endpoints read the blog's public Blogger feed, so no Blogger API key is
 required. The site and blog can run without Gmail credentials; configure
 `GMAIL_USER` and `GMAIL_APP_PASSWORD` only to send subscriber notifications.
+On the production Cloudflare Pages site, equivalent Pages Functions serve the
+blog list and detail endpoints from the same domain.
 
 ### Get All Subscribers (Admin Only)
 
