@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import Navbar from "react-bootstrap/Navbar";
 import Nav from "react-bootstrap/Nav";
 import Container from "react-bootstrap/Container";
@@ -20,15 +20,13 @@ function NavBar() {
   const [expand, updateExpanded] = useState(false);
   const [navColour, updateNavbar] = useState(false);
 
-  function scrollHandler() {
-    if (window.scrollY >= 20) {
-      updateNavbar(true);
-    } else {
-      updateNavbar(false);
-    }
-  }
+  useEffect(() => {
+    const scrollHandler = () => updateNavbar(window.scrollY >= 20);
+    window.addEventListener("scroll", scrollHandler, { passive: true });
+    scrollHandler();
 
-  window.addEventListener("scroll", scrollHandler);
+    return () => window.removeEventListener("scroll", scrollHandler);
+  }, []);
 
   return (
     <Navbar
@@ -118,6 +116,7 @@ function NavBar() {
               <Button
                 href="https://github.com/ashokpds15/ashokpds15"
                 target="_blank"
+                rel="noopener noreferrer"
                 className="fork-btn-inner"
               >
                 <CgGitFork style={{ fontSize: "1.2em" }} />{" "}

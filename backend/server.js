@@ -3,14 +3,88 @@ const cors = require("cors");
 const nodemailer = require("nodemailer");
 const sqlite3 = require("sqlite3").verbose();
 const path = require("path");
+const { createHmac, timingSafeEqual } = require("crypto");
 require("dotenv").config();
 
 const app = express();
 const PORT = process.env.PORT || 5000;
+const BLOGGER_BLOG_ID =
+  process.env.BLOGGER_BLOG_ID || "3800019340026834324";
+const BLOGGER_API_KEY = process.env.BLOGGER_API_KEY;
+const UNSUBSCRIBE_SECRET = process.env.UNSUBSCRIBE_SECRET;
+const PUBLIC_API_URL = (process.env.PUBLIC_API_URL || `http://localhost:${PORT}`)
+  .replace(/\/+$/, "");
 
 // Middleware
 app.use(cors());
 app.use(express.json());
+
+async function fetchBloggerResource(resource, query = {}) {
+  if (!BLOGGER_API_KEY) {
+    const error = new Error("Blogger API key is not configured");
+    error.code = "BLOGGER_API_KEY_MISSING";
+    throw error;
+  }
+
+  const url = new URL(
+    `https://www.googleapis.com/blogger/v3/blogs/${BLOGGER_BLOG_ID}/${resource}`
+  );
+  url.searchParams.set("key", BLOGGER_API_KEY);
+  Object.entries(query).forEach(([name, value]) => {
+    url.searchParams.set(name, String(value));
+  });
+
+  const response = await fetch(url);
+  const data = await response.json();
+  if (!response.ok) {
+    throw new Error(data.error?.message || "Blogger API request failed");
+  }
+
+  return data;
+}
+
+function isAdminRequest(req) {
+  const expectedKey = process.env.ADMIN_API_KEY;
+  const providedKey = req.get("x-admin-api-key");
+
+  if (!expectedKey || typeof providedKey !== "string") {
+    return false;
+  }
+
+  const expected = Buffer.from(expectedKey);
+  const provided = Buffer.from(providedKey);
+  return (
+    expected.length === provided.length && timingSafeEqual(expected, provided)
+  );
+}
+
+function createUnsubscribeUrl(email) {
+  const normalizedEmail = email.trim().toLowerCase();
+  const token = createHmac("sha256", UNSUBSCRIBE_SECRET)
+    .update(normalizedEmail)
+    .digest("hex");
+  return `${PUBLIC_API_URL}/api/unsubscribe?email=${encodeURIComponent(
+    normalizedEmail
+  )}&token=${token}`;
+}
+
+function isValidUnsubscribeToken(email, token) {
+  if (
+    !UNSUBSCRIBE_SECRET ||
+    typeof token !== "string" ||
+    !/^[a-f0-9]{64}$/i.test(token)
+  ) {
+    return false;
+  }
+
+  const expected = createHmac("sha256", UNSUBSCRIBE_SECRET)
+    .update(email)
+    .digest();
+  const provided = Buffer.from(token, "hex");
+  return (
+    provided.length === expected.length && timingSafeEqual(provided, expected)
+  );
+}
 
 // Database Setup
 const dbPath = path.join(__dirname, "subscribers.db");
@@ -59,11 +133,47 @@ transporter.verify((error, success) => {
 
 // Routes
 
+app.get("/api/blog/posts", async (req, res) => {
+  const requestedLimit = Number.parseInt(req.query.maxResults, 10);
+  const maxResults = Number.isFinite(requestedLimit)
+    ? Math.min(Math.max(requestedLimit, 1), 50)
+    : 12;
+
+  try {
+    const data = await fetchBloggerResource("posts", { maxResults });
+    res.json(data);
+  } catch (error) {
+    console.error("Error fetching blog posts:", error);
+    const status = error.code === "BLOGGER_API_KEY_MISSING" ? 503 : 502;
+    res.status(status).json({ message: "Unable to load blog posts." });
+  }
+});
+
+app.get("/api/blog/posts/:postId", async (req, res) => {
+  if (!/^\d+$/.test(req.params.postId)) {
+    return res.status(400).json({ message: "Invalid blog post ID." });
+  }
+
+  try {
+    const data = await fetchBloggerResource(
+      `posts/${encodeURIComponent(req.params.postId)}`
+    );
+    res.json(data);
+  } catch (error) {
+    console.error("Error fetching blog post:", error);
+    const status = error.code === "BLOGGER_API_KEY_MISSING" ? 503 : 502;
+    res.status(status).json({ message: "Unable to load blog post." });
+  }
+});
+
 // Subscribe endpoint
 app.post("/api/subscribe", (req, res) => {
-  const { email } = req.body;
+  const email =
+    typeof req.body?.email === "string"
+      ? req.body.email.trim().toLowerCase()
+      : "";
 
-  if (!email || !email.includes("@")) {
+  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
     return res.status(400).json({ message: "Invalid email address" });
   }
 
@@ -91,9 +201,7 @@ app.post("/api/subscribe", (req, res) => {
 
 // Get all subscribers (Protected - requires API key)
 app.get("/api/subscribers", (req, res) => {
-  const apiKey = req.query.key;
-
-  if (apiKey !== process.env.ADMIN_API_KEY) {
+  if (!isAdminRequest(req)) {
     return res.status(401).json({ message: "Unauthorized" });
   }
 
@@ -109,11 +217,16 @@ app.get("/api/subscribers", (req, res) => {
 
 // Send email to all subscribers (Protected - requires API key)
 app.post("/api/notify-subscribers", (req, res) => {
-  const apiKey = req.query.key;
-  const { subject, htmlContent, blogTitle, blogLink } = req.body;
+  const { subject, htmlContent, blogTitle, blogLink } = req.body || {};
 
-  if (apiKey !== process.env.ADMIN_API_KEY) {
+  if (!isAdminRequest(req)) {
     return res.status(401).json({ message: "Unauthorized" });
+  }
+
+  if (!UNSUBSCRIBE_SECRET) {
+    return res
+      .status(503)
+      .json({ message: "Unsubscribe service is not configured" });
   }
 
   if (!subject || !htmlContent) {
@@ -176,7 +289,7 @@ app.post("/api/notify-subscribers", (req, res) => {
             © 2024 My Blog. All rights reserved.
           </p>
           <p style="color: #999; font-size: 0.8rem; margin: 1rem 0 0 0;">
-            <a href="https://yourportfolio.com/unsubscribe" style="color: #999; text-decoration: none;">Unsubscribe</a> | 
+            <a href="{{UNSUBSCRIBE_URL}}" style="color: #999; text-decoration: none;">Unsubscribe</a> |
             <a href="https://yourportfolio.com/blog" style="color: #999; text-decoration: none;">View All Posts</a>
           </p>
         </div>
@@ -192,7 +305,10 @@ app.post("/api/notify-subscribers", (req, res) => {
           from: process.env.GMAIL_USER,
           to: subscriber.email,
           subject: subject,
-          html: emailHtml,
+          html: emailHtml.replace(
+            "{{UNSUBSCRIBE_URL}}",
+            createUnsubscribeUrl(subscriber.email)
+          ),
         },
         (err, info) => {
           if (err) {
@@ -217,47 +333,63 @@ app.post("/api/notify-subscribers", (req, res) => {
   });
 });
 
-// Unsubscribe endpoint
-app.post("/api/unsubscribe", (req, res) => {
-  const { email } = req.body;
+function unsubscribe(email, token, res) {
+  const normalizedEmail =
+    typeof email === "string" ? email.trim().toLowerCase() : "";
 
-  if (!email) {
-    return res.status(400).json({ message: "Email required" });
+  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(normalizedEmail)) {
+    return res.status(400).send("Invalid email address.");
   }
 
-  db.run(`DELETE FROM subscribers WHERE email = ?`, [email], function (err) {
-    if (err) {
-      console.error("Database error:", err);
-      return res.status(500).json({ message: "Failed to unsubscribe" });
-    }
+  if (!UNSUBSCRIBE_SECRET) {
+    return res.status(503).send("Unsubscribe service is not configured.");
+  }
 
-    if (this.changes === 0) {
-      return res.status(404).json({ message: "Email not found" });
-    }
+  if (!isValidUnsubscribeToken(normalizedEmail, token)) {
+    return res.status(403).send("Invalid unsubscribe link.");
+  }
 
-    res.status(200).json({
-      message: "Successfully unsubscribed",
-      email: email,
-    });
-  });
+  db.run(
+    "DELETE FROM subscribers WHERE lower(email) = ?",
+    [normalizedEmail],
+    function (err) {
+      if (err) {
+        console.error("Database error:", err);
+        return res.status(500).send("Could not unsubscribe.");
+      }
+
+      if (this.changes === 0) {
+        return res.status(404).send("Email address is not subscribed.");
+      }
+
+      res.status(200).send("You have been unsubscribed from blog updates.");
+    }
+  );
+}
+
+app.get("/api/unsubscribe", (req, res) => {
+  unsubscribe(req.query.email, req.query.token, res);
+});
+
+app.post("/api/unsubscribe", (req, res) => {
+  const { email, token } = req.body || {};
+  unsubscribe(email, token, res);
 });
 
 // Auto-send notification for latest blog post (Protected - requires API key)
 app.post("/api/auto-notify-latest-blog", (req, res) => {
-  const apiKey = req.query.key;
-
-  if (apiKey !== process.env.ADMIN_API_KEY) {
+  if (!isAdminRequest(req)) {
     return res.status(401).json({ message: "Unauthorized" });
   }
 
-  const BLOGGER_API_KEY = "AIzaSyCI9xZXzwPvx4bICIctsnTbxk9mfzIWNsY";
-  const BLOG_ID = "3800019340026834324";
+  if (!UNSUBSCRIBE_SECRET) {
+    return res
+      .status(503)
+      .json({ message: "Unsubscribe service is not configured" });
+  }
 
   // Fetch latest blog post from Blogger
-  fetch(
-    `https://www.googleapis.com/blogger/v3/blogs/${BLOG_ID}/posts?key=${BLOGGER_API_KEY}&maxResults=1&orderBy=published`
-  )
-    .then((response) => response.json())
+  fetchBloggerResource("posts", { maxResults: 1, orderBy: "published" })
     .then((data) => {
       if (!data.items || data.items.length === 0) {
         return res.status(404).json({ message: "No blog posts found" });
@@ -320,6 +452,9 @@ app.post("/api/auto-notify-latest-blog", (req, res) => {
                 Sent with lots of ❤️ love<br>
                 © 2024 My Blog. All rights reserved.
               </p>
+              <p style="color: #999; font-size: 0.8rem; margin: 1rem 0 0 0;">
+                <a href="{{UNSUBSCRIBE_URL}}" style="color: #999; text-decoration: none;">Unsubscribe</a>
+              </p>
             </div>
           </div>
         `;
@@ -333,7 +468,10 @@ app.post("/api/auto-notify-latest-blog", (req, res) => {
               from: process.env.GMAIL_USER,
               to: subscriber.email,
               subject: subject,
-              html: emailHtml,
+              html: emailHtml.replace(
+                "{{UNSUBSCRIBE_URL}}",
+                createUnsubscribeUrl(subscriber.email)
+              ),
             },
             (err, info) => {
               if (err) {
@@ -374,5 +512,5 @@ app.listen(PORT, () => {
   console.log(`🚀 Server running on http://localhost:${PORT}`);
   console.log(`📧 Email notifications ready`);
   console.log(`Subscribe endpoint: POST /api/subscribe`);
-  console.log(`Notify subscribers: POST /api/notify-subscribers?key=YOUR_API_KEY`);
+  console.log("Notify subscribers: POST /api/notify-subscribers");
 });

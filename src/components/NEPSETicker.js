@@ -1,100 +1,102 @@
-import React, { useEffect, useState, useRef } from "react";
+import React, { useEffect, useState } from "react";
 import "./NEPSETicker.css";
 
-// NEPSE API
 const API_URL = "https://nepse-data-api.onrender.com/data/today";
+
+const isValidStock = (stock) =>
+  stock &&
+  typeof stock.symbol === "string" &&
+  Number.isFinite(Number(stock.ltp)) &&
+  Number.isFinite(Number(stock.change)) &&
+  Number.isFinite(Number(stock.perChange));
 
 const NEPSETicker = () => {
   const [stocks, setStocks] = useState([]);
   const [status, setStatus] = useState({ text: "", class: "" });
-  const trackRef = useRef(null);
 
-  // Fetch data
   useEffect(() => {
+    const controller = new AbortController();
+
     async function fetchData() {
       try {
-        const res = await fetch(API_URL);
-        const data = await res.json();
-        setStocks(data);
-      } catch {
-        setStocks([
-          { symbol: "NABIL", ltp: 420, change: 4, perChange: 0.98 },
-          { symbol: "NRN", ltp: 755, change: -10, perChange: -1.3 },
-        ]);
+        const response = await fetch(API_URL, { signal: controller.signal });
+        if (!response.ok) {
+          throw new Error(`Market data request failed (${response.status})`);
+        }
+
+        const data = await response.json();
+        const validStocks = Array.isArray(data) ? data.filter(isValidStock) : [];
+        setStocks(validStocks);
+      } catch (error) {
+        if (error.name === "AbortError") {
+          return;
+        }
+        console.error("Could not load market data:", error);
+        setStocks([]);
       }
     }
 
     fetchData();
+    return () => controller.abort();
   }, []);
 
-  // Scroll animation
-  useEffect(() => {
-    if (!trackRef.current) return;
-    trackRef.current.innerHTML += trackRef.current.innerHTML;
-    let pos = 0;
-    const speed = 1;
-
-    function animate() {
-      pos -= speed;
-      trackRef.current.style.transform = `translateX(${pos}px)`;
-
-      if (Math.abs(pos) >= trackRef.current.scrollWidth / 2) {
-        pos = 0;
-      }
-      requestAnimationFrame(animate);
-    }
-    animate();
-  }, [stocks]);
-
-  // Market status
   useEffect(() => {
     const tickStatus = () => {
       const now = new Date();
-      const npt = new Date(
+      const nepalTime = new Date(
         now.toLocaleString("en-US", { timeZone: "Asia/Kathmandu" })
       );
-      const h = npt.getHours();
-      const m = npt.getMinutes();
-      const d = npt.getDay();
-      const isOpenDay = d >= 0 && d <= 4;
-      const isOpenTime = h >= 11 && (h < 15 || (h === 15 && m === 0));
+      const hour = nepalTime.getHours();
+      const minute = nepalTime.getMinutes();
+      const day = nepalTime.getDay();
+      const isOpenDay = day >= 0 && day <= 4;
+      const isOpenTime = hour >= 11 && (hour < 15 || (hour === 15 && minute === 0));
+      const isOpen = isOpenDay && isOpenTime;
 
       setStatus({
-        text: isOpenDay && isOpenTime ? "🟢 Market Open" : "🔴 Market Closed",
-        class: isOpenDay && isOpenTime ? "status-open" : "status-closed",
+        text: isOpen ? "🟢 Market Open" : "🔴 Market Closed",
+        class: isOpen ? "status-open" : "status-closed",
       });
     };
 
     tickStatus();
-    const interval = setInterval(tickStatus, 1000);
-    return () => clearInterval(interval);
+    const interval = window.setInterval(tickStatus, 60_000);
+    return () => window.clearInterval(interval);
   }, []);
+
+  const renderStocks = (keyPrefix) =>
+    stocks.map((stock, index) => (
+      <div className="ticker-entry" key={`${keyPrefix}-${stock.symbol}-${index}`}>
+        <span className="t-symbol">{stock.symbol}</span>
+        <span className="t-ltp">Rs. {stock.ltp}</span>
+        <span
+          className={`t-change ${Number(stock.change) >= 0 ? "up" : "down"}`}
+        >
+          {Number(stock.change) >= 0 ? "▲" : "▼"} {stock.change} (
+          {stock.perChange}%)
+        </span>
+      </div>
+    ));
 
   return (
     <div>
-      <div className={`market-status ${status.class}`}>
+      <div className={`market-status ${status.class}`} aria-live="polite">
         {status.text}
       </div>
-      <section className="indices-marquee">
-        <div
-          className="indices-marquee-track"
-          ref={trackRef}
-        >
-          {stocks.map((s) => (
-            <div className="ticker-entry" key={s.symbol}>
-              <span className="t-symbol">{s.symbol}</span>
-              <span className="t-ltp">Rs. {s.ltp}</span>
-              <span
-                className={`t-change ${
-                  parseFloat(s.change) >= 0 ? "up" : "down"
-                }`}
-              >
-                {parseFloat(s.change) >= 0 ? "▲" : "▼"} {s.change} (
-                {s.perChange}%)
-              </span>
+      <section className="indices-marquee" aria-label="Nepal stock prices">
+        {stocks.length === 0 ? (
+          <p className="ticker-unavailable">Market quotes unavailable</p>
+        ) : (
+          <div className="indices-marquee-track">
+            <div className="indices-marquee-group">{renderStocks("primary")}</div>
+            <div
+              className="indices-marquee-group"
+              aria-hidden="true"
+            >
+              {renderStocks("duplicate")}
             </div>
-          ))}
-        </div>
+          </div>
+        )}
       </section>
     </div>
   );

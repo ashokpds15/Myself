@@ -3,6 +3,7 @@ import { Container, Row, Col } from "react-bootstrap";
 import Particle from "../Particle";
 import BlogCard from "./BlogCard";
 import BlogSubscription from "./BlogSubscription";
+import { fetchBlogPosts } from "./blogApi";
 import "./Blog.css";
 
 function Blog() {
@@ -10,43 +11,35 @@ function Blog() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
-  // Replace these with your actual Blogger API key and Blog ID
-  const BLOGGER_API_KEY = "AIzaSyCI9xZXzwPvx4bICIctsnTbxk9mfzIWNsY";
-  const BLOG_ID = "3800019340026834324";
-
   useEffect(() => {
-    if (BLOGGER_API_KEY === "YOUR_BLOGGER_API_KEY" || BLOG_ID === "YOUR_BLOG_ID") {
-      setError("Please configure your Blogger API key and Blog ID in Blog.js");
-      setLoading(false);
-      return;
-    }
+    const controller = new AbortController();
 
     const fetchPosts = async () => {
       try {
-        const response = await fetch(
-          `https://www.googleapis.com/blogger/v3/blogs/${BLOG_ID}/posts?key=${BLOGGER_API_KEY}&maxResults=12`
-        );
-        const data = await response.json();
-        
-        if (data.error) {
-          console.error("API Error:", data.error);
-          setError(`API Error: ${data.error.message}`);
-        } else if (data.items) {
+        const data = await fetchBlogPosts(12, controller.signal);
+
+        if (Array.isArray(data.items)) {
           setPosts(data.items);
           setError(null);
         } else {
           setError("No blog posts found.");
         }
       } catch (err) {
+        if (err.name === "AbortError") {
+          return;
+        }
         console.error("Error fetching blog posts:", err);
-        setError("Failed to load blog posts. Please check your API key and Blog ID.");
+        setError("Failed to load blog posts. Please try again later.");
       } finally {
-        setLoading(false);
+        if (!controller.signal.aborted) {
+          setLoading(false);
+        }
       }
     };
 
     fetchPosts();
-  }, [BLOGGER_API_KEY, BLOG_ID]);
+    return () => controller.abort();
+  }, []);
 
   return (
     <Container fluid className="blog-section">
@@ -65,11 +58,7 @@ function Blog() {
           <div style={{ color: "#ff6b6b", textAlign: "center", padding: "20px" }}>
             <p>{error}</p>
             <p style={{ fontSize: "0.9em", marginTop: "10px" }}>
-              Get your API key from{" "}
-              <a href="https://console.cloud.google.com/" target="_blank" rel="noreferrer">
-                Google Cloud Console
-              </a>
-              {" "}and your Blog ID from your Blogger dashboard.
+              Blog service configuration may be missing. Please try again later.
             </p>
           </div>
         )}
@@ -100,7 +89,7 @@ function Blog() {
           <a
             href="https://ashokpudasaini.blogspot.com"
             target="_blank"
-            rel="noreferrer"
+            rel="noopener noreferrer"
             style={{
               color: "#c770f0",
               fontSize: "1.1em",

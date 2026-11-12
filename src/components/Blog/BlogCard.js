@@ -3,16 +3,18 @@ import Card from "react-bootstrap/Card";
 import Button from "react-bootstrap/Button";
 import { CgWebsite } from "react-icons/cg";
 import { Link } from "react-router-dom";
+import DOMPurify from "dompurify";
 
 function BlogCard(props) {
   // Strip HTML tags from description
-  const stripHtml = (html) => {
+  const stripHtml = (html = "") => {
     const tmp = document.createElement("DIV");
-    tmp.innerHTML = html;
+    tmp.innerHTML = DOMPurify.sanitize(html);
     return tmp.textContent || tmp.innerText || "";
   };
 
-  const cleanDescription = stripHtml(props.description).substring(0, 150) + "...";
+  const cleanDescription =
+    stripHtml(props.description).substring(0, 150) + "...";
 
   // Format date
   const formatDate = (dateString) => {

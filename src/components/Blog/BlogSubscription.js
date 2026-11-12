@@ -1,6 +1,7 @@
-import React, { useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { Container, Row, Col, Form, Button, Alert } from "react-bootstrap";
 import { AiOutlineMail } from "react-icons/ai";
+import { API_BASE_URL } from "./blogApi";
 import "./BlogSubscription.css";
 
 const BlogSubscription = () => {
@@ -8,9 +9,16 @@ const BlogSubscription = () => {
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState("");
   const [messageType, setMessageType] = useState("");
+  const messageTimeoutRef = useRef(null);
 
-  // Check if email is valid
-  const isEmailValid = email && email.includes("@") && email.includes(".");
+  const isEmailValid = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim());
+
+  useEffect(
+    () => () => {
+      window.clearTimeout(messageTimeoutRef.current);
+    },
+    []
+  );
 
   const handleSubscribe = async (e) => {
     e.preventDefault();
@@ -24,13 +32,13 @@ const BlogSubscription = () => {
     setLoading(true);
     try {
       const response = await fetch(
-        `${process.env.REACT_APP_BACKEND_URL || "http://localhost:5000"}/api/subscribe`,
+        `${API_BASE_URL}/api/subscribe`,
         {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
           },
-          body: JSON.stringify({ email }),
+          body: JSON.stringify({ email: email.trim().toLowerCase() }),
         }
       );
 
@@ -40,7 +48,8 @@ const BlogSubscription = () => {
         setMessageType("success");
         setMessage("✓ Successfully subscribed! You'll receive updates on new blogs.");
         setEmail("");
-        setTimeout(() => setMessage(""), 5000);
+        window.clearTimeout(messageTimeoutRef.current);
+        messageTimeoutRef.current = window.setTimeout(() => setMessage(""), 5000);
       } else {
         setMessageType("danger");
         setMessage(data.message || "Something went wrong. Please try again.");
@@ -68,7 +77,11 @@ const BlogSubscription = () => {
 
               <Form onSubmit={handleSubscribe} className="subscription-form">
                 <Form.Group className="subscription-input-group">
+                  <Form.Label htmlFor="subscription-email" className="visually-hidden">
+                    Email address
+                  </Form.Label>
                   <Form.Control
+                    id="subscription-email"
                     type="email"
                     placeholder="Enter your email address"
                     value={email}
@@ -98,7 +111,10 @@ const BlogSubscription = () => {
                     variant={messageType}
                     className="subscription-alert mt-3"
                     dismissible
-                    onClose={() => setMessage("")}
+                    onClose={() => {
+                      window.clearTimeout(messageTimeoutRef.current);
+                      setMessage("");
+                    }}
                   >
                     {message}
                   </Alert>

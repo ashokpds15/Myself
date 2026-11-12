@@ -43,6 +43,10 @@ PORT=5000
 GMAIL_USER=your_email@gmail.com
 GMAIL_APP_PASSWORD=xxxx xxxx xxxx xxxx
 ADMIN_API_KEY=your_super_secret_key_here
+BLOGGER_API_KEY=your_blogger_api_key
+BLOGGER_BLOG_ID=3800019340026834324
+UNSUBSCRIBE_SECRET=another_long_random_secret
+PUBLIC_API_URL=http://localhost:5000
 ```
 
 ### 4. Run Locally
@@ -82,9 +86,17 @@ Response:
 }
 ```
 
+### Blog content
+
+- **GET** `/api/blog/posts?maxResults=12`
+- **GET** `/api/blog/posts/:postId`
+
+These endpoints proxy Blogger requests from the backend. Set `BLOGGER_API_KEY`
+in the backend environment; do not put the key in frontend code.
+
 ### Get All Subscribers (Admin Only)
 
-**GET** `/api/subscribers?key=YOUR_ADMIN_API_KEY`
+**GET** `/api/subscribers` with the `x-admin-api-key` request header
 
 Response:
 
@@ -99,7 +111,7 @@ Response:
 
 ### Send Notification to All Subscribers (Admin Only)
 
-**POST** `/api/notify-subscribers?key=YOUR_ADMIN_API_KEY`
+**POST** `/api/notify-subscribers` with the `x-admin-api-key` request header
 
 ```json
 {
@@ -123,11 +135,16 @@ Response:
 
 ### Unsubscribe
 
-**POST** `/api/unsubscribe`
+The backend includes a tokenized unsubscribe link in notification emails.
+Set `UNSUBSCRIBE_SECRET` and `PUBLIC_API_URL` in the backend environment.
+`GET /api/unsubscribe?email=...&token=...` validates the signed token before
+removing the email address. `POST /api/unsubscribe` accepts the same `email`
+and `token` fields in JSON.
 
 ```json
 {
-  "email": "user@example.com"
+  "email": "user@example.com",
+  "token": "the-signed-token-from-the-unsubscribe-link"
 }
 ```
 
@@ -201,8 +218,9 @@ REACT_APP_BACKEND_URL=http://localhost:5000
 Make a POST request to your backend:
 
 ```bash
-curl -X POST "https://your-backend-url.com/api/notify-subscribers?key=YOUR_ADMIN_API_KEY" \
+curl -X POST "https://your-backend-url.com/api/notify-subscribers" \
   -H "Content-Type: application/json" \
+  -H "x-admin-api-key: YOUR_ADMIN_API_KEY" \
   -d '{
     "subject": "New Blog Post: How to Learn React",
     "blogTitle": "How to Learn React",

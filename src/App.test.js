@@ -1,8 +1,22 @@
-import { render, screen } from '@testing-library/react';
-import App from './App';
+import { render, screen } from "@testing-library/react";
+import App from "./App";
 
-test('renders learn react link', () => {
+jest.mock("./components/Particle", () => ({
+  __esModule: true,
+  default: () => null,
+}));
+jest.mock("./components/NEPSETicker", () => ({
+  __esModule: true,
+  default: () => null,
+}));
+jest.mock("./components/ScrollToTop", () => ({
+  __esModule: true,
+  default: () => null,
+}));
+
+test("renders the home page and navigation", () => {
   render(<App />);
-  const linkElement = screen.getByText(/learn react/i);
-  expect(linkElement).toBeInTheDocument();
+
+  expect(screen.getByRole("link", { name: /home/i })).toBeInTheDocument();
+  expect(screen.getByRole("heading", { name: /hi there/i })).toBeInTheDocument();
 });

@@ -41,7 +41,7 @@ function Home() {
               <Col md={7} className="home-header">
                 <h1 style={{ paddingBottom: 15 }} className="heading">
                   Hi There!{" "}
-                  <span className="wave" role="img" aria-labelledby="wave">
+                  <span className="wave" role="img" aria-label="Waving hand">
                     👋🏻
                   </span>
                 </h1>
@@ -81,7 +81,8 @@ function Home() {
                   <a
                     href="https://github.com/ashokpds15"
                     target="_blank"
-                    rel="noreferrer"
+                    rel="noopener noreferrer"
+                    aria-label="GitHub"
                     className="icon-colour home-social-icons"
                   >
                     <AiFillGithub />
@@ -91,7 +92,8 @@ function Home() {
                   <a
                     href="https://twitter.com/ashokpds"
                     target="_blank"
-                    rel="noreferrer"
+                    rel="noopener noreferrer"
+                    aria-label="Twitter"
                     className="icon-colour home-social-icons"
                   >
                     <AiOutlineTwitter />
@@ -101,7 +103,8 @@ function Home() {
                   <a
                     href="https://www.linkedin.com/in/ashok-pudasaini-2560a762/"
                     target="_blank"
-                    rel="noreferrer"
+                    rel="noopener noreferrer"
+                    aria-label="LinkedIn"
                     className="icon-colour home-social-icons"
                   >
                     <FaLinkedinIn />
@@ -111,7 +114,8 @@ function Home() {
                   <a
                     href="https://www.instagram.com/aadit_chhetri"
                     target="_blank"
-                    rel="noreferrer"
+                    rel="noopener noreferrer"
+                    aria-label="Instagram"
                     className="icon-colour home-social-icons"
                   >
                     <AiFillInstagram />

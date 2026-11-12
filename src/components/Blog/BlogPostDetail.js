@@ -3,6 +3,7 @@ import { Container } from "react-bootstrap";
 import { useParams, useNavigate } from "react-router-dom";
 import Particle from "../Particle";
 import DOMPurify from "dompurify";
+import { fetchBlogPost } from "./blogApi";
 import "./BlogPostDetail.css";
 
 function BlogPostDetail() {
@@ -12,34 +13,35 @@ function BlogPostDetail() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
-  const BLOGGER_API_KEY = "AIzaSyCI9xZXzwPvx4bICIctsnTbxk9mfzIWNsY";
-  const BLOG_ID = "3800019340026834324";
-
   useEffect(() => {
+    const controller = new AbortController();
+
     const fetchPost = async () => {
       try {
-        const response = await fetch(
-          `https://www.googleapis.com/blogger/v3/blogs/${BLOG_ID}/posts/${postId}?key=${BLOGGER_API_KEY}`
-        );
-        const data = await response.json();
+        const data = await fetchBlogPost(postId, controller.signal);
 
-        if (data.error) {
-          console.error("API Error:", data.error);
-          setError(`API Error: ${data.error.message}`);
-        } else if (data) {
+        if (data && data.id) {
           setPost(data);
           setError(null);
+        } else {
+          setError("Blog post not found.");
         }
       } catch (err) {
+        if (err.name === "AbortError") {
+          return;
+        }
         console.error("Error fetching blog post:", err);
         setError("Failed to load blog post.");
       } finally {
-        setLoading(false);
+        if (!controller.signal.aborted) {
+          setLoading(false);
+        }
       }
     };
 
     fetchPost();
-  }, [postId, BLOGGER_API_KEY, BLOG_ID]);
+    return () => controller.abort();
+  }, [postId]);
 
   const formatDate = (dateString) => {
     const options = { year: "numeric", month: "long", day: "numeric" };
@@ -100,7 +102,7 @@ function BlogPostDetail() {
               <a
                 href={post.url}
                 target="_blank"
-                rel="noreferrer"
+                rel="noopener noreferrer"
                 style={{
                   color: "#c770f0",
                   textDecoration: "none",

@@ -20,11 +20,12 @@ async function sendNotification() {
     console.log("📧 Fetching latest blog post and sending notifications...\n");
 
     const response = await fetch(
-      `${BACKEND_URL}/api/auto-notify-latest-blog?key=${ADMIN_API_KEY}`,
+      `${BACKEND_URL}/api/auto-notify-latest-blog`,
       {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
+          "x-admin-api-key": ADMIN_API_KEY,
         },
       }
     );
