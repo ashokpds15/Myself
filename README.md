@@ -56,13 +56,16 @@ Clone down this repository. You will need `node.js` and `git` installed globally
 
 ## 🛠 Installation and Setup Instructions
 
-1. Installation: `npm install`
+1. Install frontend dependencies: `npm install`
 
-2. In the project directory, you can run: `npm start`
+2. Install backend dependencies: `npm --prefix backend install`
 
-Runs the app in the development mode.\
+3. In the project directory, run: `npm start`
+
+This starts the blog backend and portfolio frontend in development mode.
 Open [http://localhost:3000](http://localhost:3000) to view it in the browser.
-The page will reload if you make edits.
+The page will reload if you make edits. Use `npm run start:frontend` only when
+you already have the backend running separately.
 
 ## Usage Instructions
 

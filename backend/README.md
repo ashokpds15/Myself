@@ -91,8 +91,9 @@ Response:
 - **GET** `/api/blog/posts?maxResults=12`
 - **GET** `/api/blog/posts/:postId`
 
-These endpoints proxy Blogger requests from the backend. Set `BLOGGER_API_KEY`
-in the backend environment; do not put the key in frontend code.
+These endpoints read the blog's public Blogger feed, so no Blogger API key is
+required. The site and blog can run without Gmail credentials; configure
+`GMAIL_USER` and `GMAIL_APP_PASSWORD` only to send subscriber notifications.
 
 ### Get All Subscribers (Admin Only)
 

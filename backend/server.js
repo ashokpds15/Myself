@@ -10,7 +10,6 @@ const app = express();
 const PORT = process.env.PORT || 5000;
 const BLOGGER_BLOG_ID =
   process.env.BLOGGER_BLOG_ID || "3800019340026834324";
-const BLOGGER_API_KEY = process.env.BLOGGER_API_KEY;
 const UNSUBSCRIBE_SECRET = process.env.UNSUBSCRIBE_SECRET;
 const PUBLIC_API_URL = (process.env.PUBLIC_API_URL || `http://localhost:${PORT}`)
   .replace(/\/+$/, "");
@@ -19,20 +18,15 @@ const PUBLIC_API_URL = (process.env.PUBLIC_API_URL || `http://localhost:${PORT}`
 app.use(cors());
 app.use(express.json());
 
-async function fetchBloggerResource(resource, query = {}) {
-  if (!BLOGGER_API_KEY) {
-    const error = new Error("Blogger API key is not configured");
-    error.code = "BLOGGER_API_KEY_MISSING";
-    throw error;
-  }
-
+async function fetchBloggerResource(postId, maxResults) {
+  const postPath = postId ? `/${encodeURIComponent(postId)}` : "";
   const url = new URL(
-    `https://www.googleapis.com/blogger/v3/blogs/${BLOGGER_BLOG_ID}/${resource}`
+    `https://www.blogger.com/feeds/${BLOGGER_BLOG_ID}/posts/default${postPath}`
   );
-  url.searchParams.set("key", BLOGGER_API_KEY);
-  Object.entries(query).forEach(([name, value]) => {
-    url.searchParams.set(name, String(value));
-  });
+  url.searchParams.set("alt", "json");
+  if (maxResults) {
+    url.searchParams.set("max-results", String(maxResults));
+  }
 
   const response = await fetch(url);
   const data = await response.json();
@@ -40,7 +34,36 @@ async function fetchBloggerResource(resource, query = {}) {
     throw new Error(data.error?.message || "Blogger API request failed");
   }
 
-  return data;
+  const normalizePost = (entry) => {
+    if (!entry || typeof entry !== "object") {
+      throw new Error("Blogger returned an invalid post");
+    }
+
+    const rawId = entry.id?.$t || "";
+    const id = rawId.match(/\.post-(\d+)$/)?.[1];
+    if (!id) {
+      throw new Error("Blogger returned a post with an invalid ID");
+    }
+
+    return {
+      id,
+      title: entry.title?.$t || "Untitled post",
+      content: entry.content?.$t || entry.summary?.$t || "",
+      published: entry.published?.$t || "",
+      updated: entry.updated?.$t || "",
+      url: entry.link?.find((link) => link.rel === "alternate")?.href || "",
+    };
+  };
+
+  if (postId) {
+    return normalizePost(data.entry);
+  }
+
+  const feed = data.feed || {};
+  return {
+    items: (feed.entry || []).map(normalizePost),
+    totalItems: Number(feed["openSearch$totalResults"]?.$t || 0),
+  };
 }
 
 function isAdminRequest(req) {
@@ -140,12 +163,11 @@ app.get("/api/blog/posts", async (req, res) => {
     : 12;
 
   try {
-    const data = await fetchBloggerResource("posts", { maxResults });
+    const data = await fetchBloggerResource(null, maxResults);
     res.json(data);
   } catch (error) {
     console.error("Error fetching blog posts:", error);
-    const status = error.code === "BLOGGER_API_KEY_MISSING" ? 503 : 502;
-    res.status(status).json({ message: "Unable to load blog posts." });
+    res.status(502).json({ message: "Unable to load blog posts." });
   }
 });
 
@@ -155,14 +177,11 @@ app.get("/api/blog/posts/:postId", async (req, res) => {
   }
 
   try {
-    const data = await fetchBloggerResource(
-      `posts/${encodeURIComponent(req.params.postId)}`
-    );
+    const data = await fetchBloggerResource(req.params.postId);
     res.json(data);
   } catch (error) {
     console.error("Error fetching blog post:", error);
-    const status = error.code === "BLOGGER_API_KEY_MISSING" ? 503 : 502;
-    res.status(status).json({ message: "Unable to load blog post." });
+    res.status(502).json({ message: "Unable to load blog post." });
   }
 });
 
@@ -389,7 +408,7 @@ app.post("/api/auto-notify-latest-blog", (req, res) => {
   }
 
   // Fetch latest blog post from Blogger
-  fetchBloggerResource("posts", { maxResults: 1, orderBy: "published" })
+  fetchBloggerResource(null, 1)
     .then((data) => {
       if (!data.items || data.items.length === 0) {
         return res.status(404).json({ message: "No blog posts found" });
@@ -510,7 +529,6 @@ app.get("/api/health", (req, res) => {
 // Start server
 app.listen(PORT, () => {
   console.log(`🚀 Server running on http://localhost:${PORT}`);
-  console.log(`📧 Email notifications ready`);
   console.log(`Subscribe endpoint: POST /api/subscribe`);
   console.log("Notify subscribers: POST /api/notify-subscribers");
 });
