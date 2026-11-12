@@ -1,0 +1,24 @@
+.preeti-embed-page {
+  height: 100vh;
+  padding-top: 104px;
+  overflow: hidden;
+  background: #fff;
+}
+
+.preeti-embed-frame {
+  display: block;
+  width: 100%;
+  height: calc(100vh - 104px);
+  border: 0;
+  background: #fff;
+}
+
+@media (max-width: 767px) {
+  .preeti-embed-page {
+    padding-top: 82px;
+  }
+
+  .preeti-embed-frame {
+    height: calc(100vh - 82px);
+  }
+}

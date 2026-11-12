@@ -1,0 +1,51 @@
+.news-economy-page {
+  height: 100vh;
+  padding-top: 104px;
+  overflow: hidden;
+  background: #0c0d10;
+}
+
+.news-economy-frame {
+  position: relative;
+  width: 100%;
+  height: calc(100vh - 104px);
+  overflow: hidden;
+  background: #0c0d10;
+}
+
+.news-economy-frame iframe {
+  display: block;
+  width: 100%;
+  height: 100%;
+  border: 0;
+  background: #0c0d10;
+}
+
+.news-economy-brand-mask,
+.news-economy-tools-mask {
+  position: absolute;
+  z-index: 1;
+  top: 0;
+  height: 38px;
+  background: #0c0d10;
+}
+
+.news-economy-brand-mask {
+  left: 0;
+  width: 177px;
+}
+
+.news-economy-tools-mask {
+  right: 0;
+  left: 328px;
+}
+
+@media (max-width: 767px) {
+  .news-economy-page {
+    padding-top: 82px;
+  }
+
+  .news-economy-frame {
+    height: calc(100vh - 82px);
+  }
+}

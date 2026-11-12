@@ -6,6 +6,8 @@ import About from "./components/About/About";
 import Projects from "./components/Projects/Projects";
 import Blog from "./components/Blog/Blog";
 import BlogPostDetail from "./components/Blog/BlogPostDetail";
+import NewsEconomy from "./components/NewsEconomy/NewsEconomy";
+import PreetiConverter from "./components/PreetiConverter/PreetiConverter";
 import Footer from "./components/Footer";
 import {
   BrowserRouter as Router,
@@ -41,6 +43,8 @@ function App() {
           <Route path="/about" element={<About />} />
           <Route path="/blog" element={<Blog />} />
           <Route path="/blog/:postId" element={<BlogPostDetail />} />
+          <Route path="/preeti-converter" element={<PreetiConverter />} />
+          <Route path="/news-economy" element={<NewsEconomy />} />
           <Route path="*" element={<Navigate to="/"/>} />
         </Routes>
         <Footer />

@@ -11,6 +11,8 @@ import {
   AiFillStar,
   AiOutlineHome,
   AiOutlineFundProjectionScreen,
+  AiOutlineFontSize,
+  AiOutlineBarChart,
   AiOutlineUser,
 } from "react-icons/ai";
 
@@ -87,6 +89,28 @@ function NavBar() {
                 onClick={() => updateExpanded(false)}
               >
                 <ImBlog style={{ marginBottom: "2px" }} /> Blog
+              </Nav.Link>
+            </Nav.Item>
+
+            <Nav.Item>
+              <Nav.Link
+                as={Link}
+                to="/preeti-converter"
+                onClick={() => updateExpanded(false)}
+              >
+                <AiOutlineFontSize style={{ marginBottom: "2px" }} /> Preeti
+              </Nav.Link>
+            </Nav.Item>
+
+            <Nav.Item>
+              <Nav.Link
+                as={Link}
+                to="/news-economy"
+                className="news-economy-nav"
+                onClick={() => updateExpanded(false)}
+              >
+                <AiOutlineBarChart style={{ marginBottom: "2px" }} /> News &amp;
+                Economy
               </Nav.Link>
             </Nav.Item>
 
